@@ -970,42 +970,71 @@ TEST(DynamicSceneGraphTests, RemovedAndNewEdgesCorrect) {
 
 TEST(DynamicSceneGraphTests, MergeGraphCorrectWithPrevMerges) {
   // graph 1: merged version of graph 2 (where 2 is merged into 1)
-  std::map<NodeId, NodeId> prev_merges{{2, 1}};
+  std::map<NodeId, NodeId> prev_merges{{2, 1}, {3, 4}};
   DynamicSceneGraph graph_1;
   EXPECT_TRUE(graph_1.emplaceNode(2, 0, std::make_unique<NodeAttributes>()));
   EXPECT_TRUE(graph_1.emplaceNode(3, 2, std::make_unique<NodeAttributes>()));
   EXPECT_TRUE(graph_1.emplaceNode(3, 1, std::make_unique<NodeAttributes>()));
+  EXPECT_TRUE(graph_1.emplaceNode(2, 3, std::make_unique<NodeAttributes>()));
+  EXPECT_TRUE(graph_1.emplaceNode(2, 4, std::make_unique<NodeAttributes>()));
   graph_1.mergeNodes(2, 1);
+  graph_1.mergeNodes(3, 4);
 
   // graph 2: parent between 0 and 2 (but 2 goes to 1 in graph_1)
   DynamicSceneGraph graph_2;
   EXPECT_TRUE(graph_2.emplaceNode(2, 0, std::make_unique<NodeAttributes>()));
   EXPECT_TRUE(graph_2.emplaceNode(3, 1, std::make_unique<NodeAttributes>()));
   EXPECT_TRUE(graph_2.emplaceNode(3, 2, std::make_unique<NodeAttributes>()));
+  EXPECT_TRUE(graph_2.emplaceNode(2, 3, std::make_unique<NodeAttributes>()));
+  EXPECT_TRUE(graph_2.emplaceNode(2, 4, std::make_unique<NodeAttributes>()));
   EXPECT_TRUE(graph_2.insertEdge(0, 2));
+  EXPECT_TRUE(graph_2.insertEdge(0, 3));
 
-  EXPECT_EQ(2u, graph_1.numNodes());
+  EXPECT_EQ(3u, graph_1.numNodes());
   EXPECT_EQ(0u, graph_1.numEdges());
-  EXPECT_EQ(3u, graph_2.numNodes());
-  EXPECT_EQ(1u, graph_2.numEdges());
+  EXPECT_EQ(5u, graph_2.numNodes());
+  EXPECT_EQ(2u, graph_2.numEdges());
 
   graph_1.mergeGraph(graph_2);
 
-  EXPECT_EQ(2u, graph_1.numNodes());
+  EXPECT_EQ(3u, graph_1.numNodes());
   EXPECT_EQ(0u, graph_1.numEdges());
-  EXPECT_EQ(3u, graph_2.numNodes());
-  EXPECT_EQ(1u, graph_2.numEdges());
+  EXPECT_EQ(5u, graph_2.numNodes());
+  EXPECT_EQ(2u, graph_2.numEdges());
   EXPECT_FALSE(graph_1.hasEdge(0, 1));
 
   GraphMergeConfig config;
   config.previous_merges = &prev_merges;
   graph_1.mergeGraph(graph_2, config);
 
-  EXPECT_EQ(2u, graph_1.numNodes());
+  EXPECT_EQ(3u, graph_1.numNodes());
+  EXPECT_EQ(2u, graph_1.numEdges());
+  EXPECT_EQ(5u, graph_2.numNodes());
+  EXPECT_EQ(2u, graph_2.numEdges());
+  EXPECT_TRUE(graph_1.hasEdge(0, 1));
+  EXPECT_TRUE(graph_1.hasEdge(0, 4));
+
+  // remove edge to merged node, should be propagated
+  graph_2.removeEdge(0, 3);
+  graph_1.mergeGraph(graph_2, config);
+
+  EXPECT_EQ(3u, graph_1.numNodes());
   EXPECT_EQ(1u, graph_1.numEdges());
-  EXPECT_EQ(3u, graph_2.numNodes());
+  EXPECT_EQ(5u, graph_2.numNodes());
   EXPECT_EQ(1u, graph_2.numEdges());
   EXPECT_TRUE(graph_1.hasEdge(0, 1));
+  EXPECT_FALSE(graph_1.hasEdge(0, 4));
+
+  // remove interlayer edge to merged node, should be propagated
+  graph_2.removeEdge(0, 2);
+  graph_1.mergeGraph(graph_2, config);
+
+  EXPECT_EQ(3u, graph_1.numNodes());
+  EXPECT_EQ(0u, graph_1.numEdges());
+  EXPECT_EQ(5u, graph_2.numNodes());
+  EXPECT_EQ(1u, graph_2.numEdges());
+  EXPECT_FALSE(graph_1.hasEdge(0, 1));
+  EXPECT_FALSE(graph_1.hasEdge(0, 4));
 }
 
 TEST(DynamicSceneGraphTests, CloneCorrect) {

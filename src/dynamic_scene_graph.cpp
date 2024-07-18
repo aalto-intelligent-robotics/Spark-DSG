@@ -690,7 +690,17 @@ bool DynamicSceneGraph::mergeGraph(const DynamicSceneGraph& other,
     std::vector<EdgeKey> removed_edges;
     other_layer->edges_.getRemoved(removed_edges, config.clear_removed);
     for (const auto& removed_edge : removed_edges) {
-      layers_[l_id]->removeEdge(removed_edge.k1, removed_edge.k2);
+      NodeId new_source = config.getMergedId(removed_edge.k1);
+      NodeId new_target = config.getMergedId(removed_edge.k2);
+      if (new_source == new_target) {
+        continue;
+      }
+
+      if (other_layer->hasEdge(new_source, new_target)) {
+        continue; // edge still exists through merged node
+      }
+
+      layers_[l_id]->removeEdge(new_source, new_target);
     }
 
     std::vector<NodeId> new_nodes;
