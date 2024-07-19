@@ -147,6 +147,66 @@ void EdgeContainer::setStale() {
   }
 }
 
+NodeId getMergedId(NodeId node, const std::map<NodeId, NodeId>* merges) {
+  if (!merges) {
+    return node;
+  }
+
+  auto iter = merges->find(node);
+  return iter == merges->end() ? node : iter->second;
+}
+
+void EdgeContainer::updateFrom(const EdgeContainer& other,
+                               const std::map<NodeId, NodeId>* merges) {
+  for (const auto& id_edge_pair : other_layer.edges_.edges) {
+    const auto& edge = id_edge_pair.second;
+    NodeId new_source = config.getMergedId(edge.source);
+    NodeId new_target = config.getMergedId(edge.target);
+    if (new_source == new_target) {
+      continue;
+    }
+
+    // NOTE(nathan) not really necessary but saves the clone call
+    if (hasEdge(new_source, new_target)) {
+      // TODO(nathan) clone attributes
+      continue;
+    }
+
+    insertEdge(new_source, new_target, edge.info->clone());
+  }
+
+  std::vector<EdgeKey> removed_edges;
+  other_layer->edges_.getRemoved(removed_edges, config.clear_removed);
+  for (const auto& removed_edge : removed_edges) {
+    NodeId new_source = config.getMergedId(removed_edge.k1);
+    NodeId new_target = config.getMergedId(removed_edge.k2);
+    if (new_source == new_target) {
+      continue;
+    }
+
+    if (other_layer->hasEdge(new_source, new_target)) {
+      continue;  // edge still exists through merged node
+    }
+
+    layers_[l_id]->removeEdge(new_source, new_target);
+  }
+
+  for (const auto& id_edge_pair : other.interlayer_edges()) {
+    const auto& edge = id_edge_pair.second;
+    NodeId new_source = config.getMergedId(edge.source);
+    NodeId new_target = config.getMergedId(edge.target);
+    if (new_source == new_target) {
+      continue;
+    }
+
+    if (config.enforce_parent_constraints) {
+      insertParentEdge(new_source, new_target, edge.info->clone());
+    } else {
+      insertEdge(new_source, new_target, edge.info->clone());
+    }
+  }
+}
+
 Edge* EdgeContainer::find(const EdgeKey& key) const {
   auto iter = edges.find(key);
   if (iter == edges.end()) {

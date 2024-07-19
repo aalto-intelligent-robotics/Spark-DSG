@@ -107,6 +107,9 @@ struct EdgeContainer {
 
   void setStale();
 
+  void updateFrom(const EdgeContainer& other,
+                  const std::map<NodeId, NodeId>* merges = nullptr);
+
   Edges edges;
   EdgeStatusMap edge_status;
   mutable std::map<EdgeKey, bool> stale_edges;

@@ -251,22 +251,7 @@ void SceneGraphLayer::mergeLayer(const SceneGraphLayer& other_layer,
     }
   }
 
-  for (const auto& id_edge_pair : other_layer.edges_.edges) {
-    const auto& edge = id_edge_pair.second;
-    NodeId new_source = config.getMergedId(edge.source);
-    NodeId new_target = config.getMergedId(edge.target);
-    if (new_source == new_target) {
-      continue;
-    }
-
-    // NOTE(nathan) not really necessary but saves the clone call
-    if (hasEdge(new_source, new_target)) {
-      // TODO(nathan) clone attributes
-      continue;
-    }
-
-    insertEdge(new_source, new_target, edge.info->clone());
-  }
+  edges_.updateFrom(other_layer.edges_);
 }
 
 void SceneGraphLayer::getNewNodes(std::vector<NodeId>& new_nodes, bool clear_new) {
