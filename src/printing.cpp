@@ -51,9 +51,4 @@ std::ostream& operator<<(std::ostream& out, const SceneGraphNode& node) {
   return out;
 }
 
-Eigen::IOFormat getDefaultVectorFormat() {
-  return Eigen::IOFormat(
-      Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n", "[", "]");
-}
-
 }  // namespace spark_dsg

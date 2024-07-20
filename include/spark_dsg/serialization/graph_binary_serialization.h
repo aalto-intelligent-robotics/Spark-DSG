@@ -34,6 +34,8 @@
  * -------------------------------------------------------------------------- */
 #pragma once
 
+#include <memory>
+
 #include "spark_dsg/serialization/versioning.h"
 #include "spark_dsg/spark_dsg_fwd.h"
 

@@ -36,6 +36,7 @@
 #include "spark_dsg/base_layer.h"
 #include "spark_dsg/edge_container.h"
 #include "spark_dsg/layer_prefix.h"
+#include "spark_dsg/scene_graph_node.h"
 
 namespace spark_dsg {
 

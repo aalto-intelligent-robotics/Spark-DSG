@@ -263,7 +263,8 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox& box) {
     return os;
   }
 
-  auto format = getDefaultVectorFormat();
+  Eigen::IOFormat format(
+      Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", "\n", "[", "]");
   os << "{pos: " << box.world_P_center.transpose().format(format)
      << ", dim: " << box.dimensions.transpose().format(format);
   if (box.type == BoundingBox::Type::RAABB || box.type == BoundingBox::Type::OBB) {

@@ -38,6 +38,7 @@
 #include <unordered_set>
 
 #include "spark_dsg/base_layer.h"
+#include "spark_dsg/scene_graph_node.h"
 #include "spark_dsg/edge_container.h"
 
 namespace spark_dsg {

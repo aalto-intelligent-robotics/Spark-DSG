@@ -1,11 +1,11 @@
 #pragma once
-#include <memory>
 
 namespace spark_dsg {
 
 class Mesh;
 
 struct NodeAttributes;
+class SceneGraphNode;
 
 struct EdgeAttributes;
 struct SceneGraphEdge;

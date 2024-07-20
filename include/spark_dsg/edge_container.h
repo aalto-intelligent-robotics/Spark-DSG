@@ -34,6 +34,7 @@
  * -------------------------------------------------------------------------- */
 #pragma once
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "spark_dsg/scene_graph_types.h"
