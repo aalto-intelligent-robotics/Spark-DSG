@@ -48,7 +48,8 @@ using serialization::Visitor;
 
 template <typename T>
 std::string printAttrs(const T& attrs) {
-  const json output = attrs;
+  json output;
+  serialization::Visitor::to(output, attrs);
   return output;
 }
 
@@ -95,7 +96,8 @@ TEST_P(NodeAttributeSerializationFixture, JsonSerialization) {
   const auto expected = GetParam();
   ASSERT_TRUE(expected);
 
-  const json output = *expected;
+  json output;
+  serialization::Visitor::to(output, *expected);
   auto result = Visitor::from(AttributeRegistry<NodeAttributes>::current(), output);
 
   ASSERT_TRUE(result);
@@ -107,7 +109,8 @@ TEST_P(EdgeAttributeSerializationFixture, JsonSerialization) {
   const auto expected = GetParam();
   ASSERT_TRUE(expected);
 
-  const json output = *expected;
+  json output;
+  serialization::Visitor::to(output, *expected);
   auto result = Visitor::from(AttributeRegistry<EdgeAttributes>::current(), output);
 
   ASSERT_TRUE(result);
@@ -121,7 +124,7 @@ TEST_P(NodeAttributeSerializationFixture, BinarySerialization) {
 
   std::vector<uint8_t> buffer;
   serialization::BinarySerializer serializer(&buffer);
-  serializer.write(*expected);
+  serialization::Visitor::to(serializer, *expected);
 
   serialization::BinaryDeserializer deserializer(buffer);
   auto result =
@@ -138,7 +141,7 @@ TEST_P(EdgeAttributeSerializationFixture, BinarySerialization) {
 
   std::vector<uint8_t> buffer;
   serialization::BinarySerializer serializer(&buffer);
-  serializer.write(*expected);
+  serialization::Visitor::to(serializer, *expected);
 
   serialization::BinaryDeserializer deserializer(buffer);
   auto result =

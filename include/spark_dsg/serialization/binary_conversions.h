@@ -55,12 +55,6 @@ class Mesh;
 void read_binary(const serialization::BinaryDeserializer& s, Mesh& mesh);
 void write_binary(serialization::BinarySerializer& s, const Mesh& mesh);
 
-struct NodeAttributes;
-void write_binary(serialization::BinarySerializer& s, const NodeAttributes& attrs);
-
-struct EdgeAttributes;
-void write_binary(serialization::BinarySerializer& s, const EdgeAttributes& attrs);
-
 namespace io {
 
 struct FileHeader;

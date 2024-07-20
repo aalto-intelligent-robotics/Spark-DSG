@@ -36,7 +36,6 @@
 
 #include "spark_dsg/edge_attributes.h"
 #include "spark_dsg/node_attributes.h"
-#include "spark_dsg/serialization/attribute_serialization.h"
 #include "spark_dsg/serialization/versioning.h"
 
 namespace spark_dsg {
@@ -127,16 +126,6 @@ void write_binary(serialization::BinarySerializer& s, const Color& c) {
   s.write(c.g);
   s.write(c.b);
   s.write(c.a);
-}
-
-// TODO(nathan) mesh?
-
-void write_binary(serialization::BinarySerializer& s, const NodeAttributes& attrs) {
-  serialization::Visitor::to(s, attrs);
-}
-
-void write_binary(serialization::BinarySerializer& s, const EdgeAttributes& attrs) {
-  serialization::Visitor::to(s, attrs);
 }
 
 namespace io {

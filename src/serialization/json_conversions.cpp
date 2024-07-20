@@ -34,14 +34,8 @@
  * -------------------------------------------------------------------------- */
 #include "spark_dsg/serialization/json_conversions.h"
 
-#include <fstream>
-
-#include "spark_dsg/bounding_box.h"
 #include "spark_dsg/edge_attributes.h"
-#include "spark_dsg/logging.h"
-#include "spark_dsg/mesh.h"
 #include "spark_dsg/node_attributes.h"
-#include "spark_dsg/serialization/attribute_serialization.h"
 #include "spark_dsg/serialization/versioning.h"
 
 namespace spark_dsg {
@@ -145,14 +139,6 @@ void from_json(const json& record, Color& c) {
 }
 
 // TODO(nathan) think about mesh serialization
-
-void to_json(json& record, const NodeAttributes& attributes) {
-  serialization::Visitor::to(record, attributes);
-}
-
-void to_json(json& record, const EdgeAttributes& attributes) {
-  serialization::Visitor::to(record, attributes);
-}
 
 namespace io {
 

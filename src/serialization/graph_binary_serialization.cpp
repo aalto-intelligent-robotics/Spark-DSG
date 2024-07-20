@@ -43,6 +43,14 @@
 
 namespace spark_dsg {
 
+void write_binary(serialization::BinarySerializer& s, const NodeAttributes& attrs) {
+  serialization::Visitor::to(s, attrs);
+}
+
+void write_binary(serialization::BinarySerializer& s, const EdgeAttributes& attrs) {
+  serialization::Visitor::to(s, attrs);
+}
+
 void write_binary(serialization::BinarySerializer& s, const SceneGraphNode& node) {
   s.startFixedArray(4);
   s.write(node.layer);

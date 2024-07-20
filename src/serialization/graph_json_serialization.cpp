@@ -50,6 +50,14 @@ namespace spark_dsg {
 
 using nlohmann::json;
 
+void to_json(json& record, const NodeAttributes& attributes) {
+  serialization::Visitor::to(record, attributes);
+}
+
+void to_json(json& record, const EdgeAttributes& attributes) {
+  serialization::Visitor::to(record, attributes);
+}
+
 void to_json(json& record, const SceneGraphNode& node) {
   record = {{"id", node.id}, {"layer", node.layer}, {"attributes", node.attributes()}};
   if (node.timestamp) {
