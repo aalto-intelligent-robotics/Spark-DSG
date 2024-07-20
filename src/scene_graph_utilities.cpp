@@ -34,8 +34,8 @@
  * -------------------------------------------------------------------------- */
 #include "spark_dsg/scene_graph_utilities.h"
 
-#include "spark_dsg/bounding_box_extraction.h"
 #include "spark_dsg/dynamic_scene_graph.h"
+#include "spark_dsg/node_attributes.h"
 
 namespace spark_dsg {
 
@@ -62,40 +62,20 @@ void getAncestorsOfLayer(const DynamicSceneGraph& graph,
   }
 }
 
-struct NodeAdaptor : public bounding_box::PointAdaptor {
-  explicit NodeAdaptor(const DynamicSceneGraph* graph) : graph(graph) {}
-
-  ~NodeAdaptor() = default;
-
-  size_t size() const override { return nodes.size(); }
-
-  Eigen::Vector3f get(size_t index) const override {
-    if (!graph) {
-      throw std::runtime_error("invalid graph!");
-    }
-
-    return graph->getPosition(nodes.at(index)).cast<float>();
-  }
-
-  void add(NodeId node) { nodes.push_back(node); }
-
-  const DynamicSceneGraph* graph = nullptr;
-  std::vector<NodeId> nodes;
-};
-
 BoundingBox computeAncestorBoundingBox(const DynamicSceneGraph& graph,
                                        NodeId parent,
                                        LayerId child_layer,
                                        BoundingBox::Type bbox_type) {
-  NodeAdaptor adaptor(&graph);
-  getAncestorsOfLayer(graph,
-                      parent,
-                      child_layer,
-                      [&adaptor](const DynamicSceneGraph&, const NodeId ancestor) {
-                        adaptor.add(ancestor);
-                      });
+  std::vector<Eigen::Vector3f> points;
+  getAncestorsOfLayer(
+      graph,
+      parent,
+      child_layer,
+      [&points](const DynamicSceneGraph& graph, const NodeId ancestor) {
+        points.push_back(graph.getNode(ancestor).attributes().position.cast<float>());
+      });
 
-  return bounding_box::extract(adaptor, bbox_type);
+  return BoundingBox(points, bbox_type);
 }
 
 }  // namespace spark_dsg
