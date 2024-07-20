@@ -34,7 +34,6 @@
  * -------------------------------------------------------------------------- */
 #pragma once
 
-#include <chrono>
 #include <list>
 #include <map>
 #include <memory>
@@ -45,27 +44,12 @@
 #include "spark_dsg/bounding_box.h"
 #include "spark_dsg/color.h"
 #include "spark_dsg/mesh.h"
-#include "spark_dsg/scene_graph_types.h"
-#include "spark_dsg/serialization/attribute_registry.h"
 
 namespace spark_dsg {
 namespace serialization {
 class Visitor;
-}
-
-struct NodeAttributes;
-
-template <typename T>
-using NodeAttributeRegistration =
-    serialization::AttributeRegistration<NodeAttributes, T>;
-
-#define REGISTER_NODE_ATTRIBUTES(attr_type)                                  \
-  inline static const auto registration_ =                                   \
-      NodeAttributeRegistration<attr_type>(#attr_type);                      \
-  const serialization::RegistrationInfo& registrationImpl() const override { \
-    return registration_.info;                                               \
-  }                                                                          \
-  static_assert(true, "")
+struct RegistrationInfo;
+}  // namespace serialization
 
 // TODO(nathan) handle this better
 /**
@@ -104,6 +88,16 @@ struct NodeAttributes {
   explicit NodeAttributes(const Eigen::Vector3d& position);
   virtual ~NodeAttributes() = default;
   virtual NodeAttributes::Ptr clone() const;
+  const serialization::RegistrationInfo& registration() const;
+  bool operator==(const NodeAttributes& other) const;
+
+  /**
+   * @brief output attribute information
+   * @param out output stream
+   * @param attrs attributes to print
+   * @returns original output stream
+   */
+  friend std::ostream& operator<<(std::ostream& out, const NodeAttributes& attrs);
 
   //! Position of the node
   Eigen::Vector3d position;
@@ -114,37 +108,12 @@ struct NodeAttributes {
   //! whether the node was observed by Hydra, or added as a prediction
   bool is_predicted;
 
-  /**
-   * @brief output attribute information
-   * @param out output stream
-   * @param attrs attributes to print
-   * @returns original output stream
-   */
-  friend std::ostream& operator<<(std::ostream& out, const NodeAttributes& attrs);
-
-  bool operator==(const NodeAttributes& other) const;
-
-  const serialization::RegistrationInfo& registration() const {
-    return registrationImpl();
-  }
-
  protected:
-  //! actually output information to the std::ostream
-  virtual std::ostream& fill_ostream(std::ostream& out) const;
-  //! dispatch function for serialization
-  virtual void serialization_info();
-  //! dispatch function for serialization
-  void serialization_info() const;
-  //! compute equality
   virtual bool is_equal(const NodeAttributes& other) const;
-
-  inline static const auto registration_ =
-      NodeAttributeRegistration<NodeAttributes>("NodeAttributes");
-
-  //! get registration
-  virtual const serialization::RegistrationInfo& registrationImpl() const {
-    return registration_.info;
-  }
+  virtual std::ostream& fill_ostream(std::ostream& out) const;
+  virtual void serialization_info();
+  void serialization_info() const;
+  virtual const serialization::RegistrationInfo& registrationImpl() const;
 };
 
 /**
@@ -183,8 +152,7 @@ struct SemanticNodeAttributes : public NodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(SemanticNodeAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
 
 /**
@@ -216,8 +184,7 @@ struct ObjectNodeAttributes : public SemanticNodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(ObjectNodeAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
 
 /**
@@ -242,8 +209,7 @@ struct RoomNodeAttributes : public SemanticNodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(RoomNodeAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
 
 /**
@@ -293,9 +259,9 @@ struct PlaceNodeAttributes : public SemanticNodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(PlaceNodeAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
+
 using FrontierNodeAttributes = PlaceNodeAttributes;
 
 /**
@@ -351,8 +317,7 @@ struct Place2dNodeAttributes : public SemanticNodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(Place2dNodeAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
 
 struct AgentNodeAttributes : public NodeAttributes {
@@ -364,12 +329,12 @@ struct AgentNodeAttributes : public NodeAttributes {
   AgentNodeAttributes();
   AgentNodeAttributes(const Eigen::Quaterniond& world_R_body,
                       const Eigen::Vector3d& world_P_body,
-                      NodeId external_key);
+                      uint64_t external_key);
   virtual ~AgentNodeAttributes() = default;
   NodeAttributes::Ptr clone() const override;
 
   Eigen::Quaterniond world_R_body;
-  NodeId external_key;
+  uint64_t external_key;
   BowIdVector dbow_ids;
   Eigen::VectorXf dbow_values;
 
@@ -377,8 +342,7 @@ struct AgentNodeAttributes : public NodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(AgentNodeAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
 
 /**
@@ -418,8 +382,7 @@ struct KhronosObjectAttributes : public ObjectNodeAttributes {
   std::ostream& fill_ostream(std::ostream& out) const override;
   void serialization_info() override;
   bool is_equal(const NodeAttributes& other) const override;
-  // registers derived attributes
-  REGISTER_NODE_ATTRIBUTES(KhronosObjectAttributes);
+  const serialization::RegistrationInfo& registrationImpl() const override;
 };
 
 }  // namespace spark_dsg

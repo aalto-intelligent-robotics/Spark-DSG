@@ -40,6 +40,22 @@
 
 namespace spark_dsg {
 
+using serialization::RegistrationInfo;
+
+template <typename T>
+using EdgeAttributeRegistration =
+    serialization::AttributeRegistration<EdgeAttributes, T>;
+
+#define REGISTER_EDGE_ATTRIBUTES(attr_type)                     \
+  static const auto attr_type##registration_ =                  \
+      EdgeAttributeRegistration<attr_type>(#attr_type);         \
+  const RegistrationInfo& attr_type::registrationImpl() const { \
+    return attr_type##registration_.info;                       \
+  }                                                             \
+  static_assert(true, "")
+
+REGISTER_EDGE_ATTRIBUTES(EdgeAttributes);
+
 EdgeAttributes::EdgeAttributes() : weighted(false), weight(1.0) {}
 
 EdgeAttributes::EdgeAttributes(double weight) : weighted(true), weight(weight) {}
@@ -50,15 +66,19 @@ EdgeAttributes::Ptr EdgeAttributes::clone() const {
   return std::make_unique<EdgeAttributes>(*this);
 }
 
+const serialization::RegistrationInfo& EdgeAttributes::registration() const {
+  return registrationImpl();
+}
+
+bool EdgeAttributes::operator==(const EdgeAttributes& other) const {
+  return is_equal(other);
+}
+
 std::ostream& operator<<(std::ostream& out, const EdgeAttributes& attrs) {
   out << "{";
   attrs.fill_ostream(out);
   out << "}";
   return out;
-}
-
-bool EdgeAttributes::operator==(const EdgeAttributes& other) const {
-  return is_equal(other);
 }
 
 void EdgeAttributes::fill_ostream(std::ostream& out) const {

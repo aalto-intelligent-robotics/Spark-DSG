@@ -35,12 +35,36 @@
 #include "spark_dsg/node_attributes.h"
 
 #include "spark_dsg/printing.h"
+#include "spark_dsg/serialization/attribute_registry.h"
 #include "spark_dsg/serialization/attribute_serialization.h"
 #include "spark_dsg/serialization/binary_conversions.h"
 #include "spark_dsg/serialization/json_conversions.h"
 #include "spark_dsg/serialization/versioning.h"
 
 namespace spark_dsg {
+
+using serialization::RegistrationInfo;
+
+template <typename T>
+using NodeAttributeRegistration =
+    serialization::AttributeRegistration<NodeAttributes, T>;
+
+#define REGISTER_NODE_ATTRIBUTES(attr_type)                     \
+  static const auto attr_type##registration_ =                  \
+      NodeAttributeRegistration<attr_type>(#attr_type);         \
+  const RegistrationInfo& attr_type::registrationImpl() const { \
+    return attr_type##registration_.info;                       \
+  }                                                             \
+  static_assert(true, "")
+
+REGISTER_NODE_ATTRIBUTES(NodeAttributes);
+REGISTER_NODE_ATTRIBUTES(SemanticNodeAttributes);
+REGISTER_NODE_ATTRIBUTES(ObjectNodeAttributes);
+REGISTER_NODE_ATTRIBUTES(RoomNodeAttributes);
+REGISTER_NODE_ATTRIBUTES(PlaceNodeAttributes);
+REGISTER_NODE_ATTRIBUTES(Place2dNodeAttributes);
+REGISTER_NODE_ATTRIBUTES(AgentNodeAttributes);
+REGISTER_NODE_ATTRIBUTES(KhronosObjectAttributes);
 
 template <typename T>
 std::string showIterable(const T& iterable, size_t max_length = 80) {
@@ -115,6 +139,10 @@ NodeAttributes::Ptr NodeAttributes::clone() const {
 
 bool NodeAttributes::operator==(const NodeAttributes& other) const {
   return is_equal(other);
+}
+
+const RegistrationInfo& NodeAttributes::registration() const {
+  return registrationImpl();
 }
 
 std::ostream& NodeAttributes::fill_ostream(std::ostream& out) const {
