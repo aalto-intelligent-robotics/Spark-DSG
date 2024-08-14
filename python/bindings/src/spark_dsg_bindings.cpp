@@ -33,6 +33,7 @@
  * purposes notwithstanding any copyright notation herein.
  * -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
+#include <spark_dsg/serialization/versioning.h>
 
 #include "spark_dsg/python/bounding_box.h"
 #include "spark_dsg/python/dynamic_scene_graph.h"
@@ -47,7 +48,6 @@
 #include "spark_dsg/python/zmq_interface.h"
 
 namespace py = pybind11;
-using namespace py::literals;
 
 PYBIND11_MODULE(_dsg_bindings, module) {
   py::options options;
@@ -64,4 +64,7 @@ PYBIND11_MODULE(_dsg_bindings, module) {
   spark_dsg::python::scene_graph_node::addBindings(module);
   spark_dsg::python::scene_graph_utilities::addBindings(module);
   spark_dsg::python::zmq_interface::addBindings(module);
+
+  module.def("version",
+             []() { return spark_dsg::io::FileHeader::current().version.toString(); });
 }
