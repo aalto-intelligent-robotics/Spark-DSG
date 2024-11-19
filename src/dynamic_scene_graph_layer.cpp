@@ -195,8 +195,8 @@ bool DynamicSceneGraphLayer::insertEdge(NodeId source,
                                         NodeId target,
                                         std::unique_ptr<EdgeAttributes>&& edge_info) {
   if (source == target) {
-    SG_LOG(WARNING) << "Attempted to add a self-edge for "
-                    << NodeSymbol(source).getLabel() << std::endl;
+    SG_LOG(WARN) << "Attempted to add a self-edge for "
+                 << NodeSymbol(source).getLabel();
     return false;
   }
 

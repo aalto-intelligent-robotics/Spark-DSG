@@ -59,14 +59,13 @@ bool SceneGraphLayer::emplaceNode(NodeId node_id,
 
 bool SceneGraphLayer::insertNode(std::unique_ptr<SceneGraphNode>&& node) {
   if (!node) {
-    SG_LOG(ERROR) << "Attempted to add an unitialized node to layer " << id
-                  << std::endl;
+    SG_LOG(ERROR) << "Attempted to add an unitialized node to layer " << id;
     return false;
   }
 
   if (node->layer != id) {
-    SG_LOG(WARNING) << "Attempted to add a node with layer " << node->layer
-                    << " to layer " << id << std::endl;
+    SG_LOG(WARN) << "Attempted to add a node with layer " << node->layer
+                    << " to layer " << id;
     return false;
   }
 
@@ -84,7 +83,7 @@ bool SceneGraphLayer::insertEdge(NodeId source,
                                  NodeId target,
                                  std::unique_ptr<EdgeAttributes>&& edge_info) {
   if (source == target) {
-    SG_LOG(WARNING) << "Attempted to add a self-edge" << std::endl;
+    SG_LOG(WARN) << "Attempted to add a self-edge";
     return false;
   }
 

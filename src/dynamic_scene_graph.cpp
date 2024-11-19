@@ -145,7 +145,7 @@ bool DynamicSceneGraph::emplaceNode(LayerId layer_id,
   }
 
   if (!layers_.count(layer_id)) {
-    SG_LOG(WARNING) << "Invalid layer: " << layer_id << std::endl;
+    SG_LOG(WARN) << "Invalid layer: " << layer_id;
     return false;
   }
 
@@ -171,7 +171,7 @@ bool DynamicSceneGraph::emplaceNode(LayerId layer,
 
   if (hasNode(new_node_id)) {
     SG_LOG(ERROR) << "scene graph contains node " << new_node_id.getLabel()
-                  << ". fix conflicting prefix: " << prefix.str() << std::endl;
+                  << ". fix conflicting prefix: " << prefix.str();
     return false;
   }
 
@@ -194,7 +194,7 @@ bool DynamicSceneGraph::emplacePrevDynamicNode(
     std::unique_ptr<NodeAttributes>&& attrs) {
   if (hasNode(prev_node_id)) {
     SG_LOG(ERROR) << "scene graph already contains node "
-                  << NodeSymbol(prev_node_id).getLabel() << std::endl;
+                  << NodeSymbol(prev_node_id).getLabel();
     return false;
   }
 
@@ -243,7 +243,7 @@ bool DynamicSceneGraph::addOrUpdateNode(LayerId layer_id,
                                         std::unique_ptr<NodeAttributes>&& attrs,
                                         std::optional<std::chrono::nanoseconds> stamp) {
   if (!layers_.count(layer_id)) {
-    SG_LOG(WARNING) << "Invalid layer: " << layer_id << std::endl;
+    SG_LOG(WARN) << "Invalid layer: " << layer_id;
     return false;
   }
 
@@ -637,7 +637,7 @@ bool DynamicSceneGraph::updateFromLayer(SceneGraphLayer& other_layer,
                                         std::unique_ptr<Edges>&& edges) {
   // TODO(nathan) consider condensing with mergeGraph
   if (!layers_.count(other_layer.id)) {
-    SG_LOG(ERROR) << "Scene graph does not have layer: " << other_layer.id << std::endl;
+    SG_LOG(ERROR) << "Scene graph does not have layer: " << other_layer.id;
     return false;
   }
 
