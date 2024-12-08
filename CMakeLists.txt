@@ -18,6 +18,7 @@ configure_file(cmake/spark_dsg_version.h.in include/spark_dsg_version.h)
 find_package(nlohmann_json REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Threads REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(zmq libzmq)
@@ -57,12 +58,13 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 target_include_directories(
-  ${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>
-                         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  ${PROJECT_NAME}
+  PUBLIC $<INSTALL_INTERFACE:include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> ${OpenCV_INCLUDE_DIRS}
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 )
 target_link_libraries(
-  ${PROJECT_NAME} PUBLIC Eigen3::Eigen nlohmann_json::nlohmann_json
+  ${PROJECT_NAME} PUBLIC Eigen3::Eigen nlohmann_json::nlohmann_json ${OpenCV_LIBS}
   PRIVATE Threads::Threads
 )
 

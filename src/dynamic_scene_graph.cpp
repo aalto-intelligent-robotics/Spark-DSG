@@ -35,6 +35,11 @@
 #include "spark_dsg/dynamic_scene_graph.h"
 
 #include <filesystem>
+#include <memory>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <sstream>
 
 #include "spark_dsg/edge_attributes.h"
 #include "spark_dsg/logging.h"
@@ -70,6 +75,10 @@ void DynamicSceneGraph::clear() {
   dynamic_interlayer_edges_.reset();
 
   mesh_.reset();
+
+  //! TEST: map views
+  map_view_count_ = 0;
+  map_views_.clear();
 
   for (const auto& id : layer_ids) {
     layers_[id] = std::make_unique<SceneGraphLayer>(id);
@@ -1051,6 +1060,24 @@ void DynamicSceneGraph::visitLayers(const LayerVisitor& cb) {
       cb(LayerKey(id_group_pair.first, prefix_layer_pair.first),
          prefix_layer_pair.second.get());
     }
+  }
+}
+void DynamicSceneGraph::addMapView(const cv::Mat& map_view) {
+  map_views_.insert(std::pair(map_view_count_++, map_view));
+}
+
+void DynamicSceneGraph::saveMapViews(const std::string filepath) {
+  for (const auto& id_image_pair : map_views_) {
+    // std::cout << "Saving image " << id_image_pair.first << std::endl;
+    // Pad 0s so that the string has 3 numbers
+    uint8_t width = 3;
+    std::string filename = "/MapView_";
+    std::ostringstream oss;
+    oss << std::setw(width) << std::setfill('0') << id_image_pair.first;
+    filename = filename + oss.str() + ".png";
+    std::shared_ptr<cv::Mat> image = std::make_shared<cv::Mat>(id_image_pair.second);
+    cv::cvtColor(*image, *image, cv::COLOR_RGB2BGR);
+    cv::imwrite(filepath + filename, *image);
   }
 }
 

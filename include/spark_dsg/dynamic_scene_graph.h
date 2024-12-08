@@ -35,6 +35,7 @@
 #pragma once
 #include <map>
 #include <memory>
+#include <opencv2/core/mat.hpp>
 #include <type_traits>
 
 #include "spark_dsg/dynamic_scene_graph_layer.h"
@@ -62,6 +63,8 @@ class DynamicSceneGraph {
   using DynamicLayers = std::map<uint32_t, DynamicSceneGraphLayer::Ptr>;
   //! Callback type
   using LayerVisitor = std::function<void(LayerKey, BaseLayer*)>;
+  //! TEST: the rgb images of used to build the dsg
+  using MapViews = std::unordered_map<uint16_t, cv::Mat>;
 
   friend class SceneGraphLogger;
 
@@ -515,6 +518,12 @@ class DynamicSceneGraph {
    */
   static Ptr load(std::string filepath);
 
+  //! TEST: Add descriptions if this works
+  void addMapView(const cv::Mat& map_view);
+
+  //! TEST: Add descriptions if this works
+  void saveMapViews(const std::string filepath);
+
   void setMesh(const std::shared_ptr<Mesh>& mesh);
 
   bool hasMesh() const;
@@ -574,6 +583,10 @@ class DynamicSceneGraph {
   EdgeContainer dynamic_interlayer_edges_;
 
   std::shared_ptr<Mesh> mesh_;
+
+  //! TEST: add images used to build the graph
+  uint16_t map_view_count_;
+  MapViews map_views_;
 
  public:
   /**

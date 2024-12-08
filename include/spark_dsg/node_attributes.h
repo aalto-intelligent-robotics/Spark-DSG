@@ -35,15 +35,21 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
+#include <opencv2/core.hpp>
 #include <optional>
 #include <ostream>
 #include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "spark_dsg/bounding_box.h"
 #include "spark_dsg/color.h"
+#include "spark_dsg/instance_views.h"
 #include "spark_dsg/mesh.h"
 #include "spark_dsg/scene_graph_types.h"
 #include "spark_dsg/serialization/attribute_registry.h"
@@ -211,6 +217,9 @@ struct ObjectNodeAttributes : public SemanticNodeAttributes {
   bool registered;
   //! rotation of object w.r.t. world (only valid when registerd)
   Eigen::Quaterniond world_R_object;
+
+  //! TEST: series of pairs of images + masks of the instance
+  InstanceViews instance_views;
 
  protected:
   std::ostream& fill_ostream(std::ostream& out) const override;

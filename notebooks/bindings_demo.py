@@ -54,18 +54,19 @@ import pathlib
 
 
 # %%
-path_to_dsg = "~/uh2_office_dsg.json"
+path_to_dsg = "~/dsg_output/flat_run1/backend/dsg_with_mesh.json"
 path_to_dsg = pathlib.Path(path_to_dsg).expanduser().absolute()
 
 
 # %%
 G = dsg.DynamicSceneGraph.load(str(path_to_dsg))
 
+print(G)
 
 # %%
-fig = dsg.plot_scene_graph(G, marker_size=6)
-if fig is not None:
-    fig.show(renderer="notebook")
+# fig = dsg.plot_scene_graph(G)
+# if fig is not None:
+#     fig.show(renderer="notebook")
 
 
 # %% [markdown]
