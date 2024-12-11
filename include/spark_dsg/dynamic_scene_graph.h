@@ -584,7 +584,7 @@ class DynamicSceneGraph {
 
   std::shared_ptr<Mesh> mesh_;
 
-  //! TEST: add images used to build the graph
+  //! TEST: add images used to build the graph (starts with id 1)
   uint16_t map_view_count_;
   MapViews map_views_;
 
@@ -615,6 +615,10 @@ class DynamicSceneGraph {
 
     return iter->second;
   }
+  // TEST: Get map_views
+  inline const MapViews& mapViews() const { return map_views_; }
+
+  inline const uint16_t& mapViewCount() const { return map_view_count_; }
 
   inline const std::map<LayerId, DynamicLayers>& dynamicLayers() const {
     return dynamic_layers_;

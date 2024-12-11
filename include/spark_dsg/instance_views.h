@@ -8,6 +8,7 @@
 namespace spark_dsg {
 
 struct InstanceViews {
+  // map from image-id to mask
   std::unordered_map<uint16_t, cv::Mat> id_to_instance_masks;
 
   // Cosntructors.

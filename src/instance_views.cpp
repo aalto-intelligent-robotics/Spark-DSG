@@ -6,7 +6,7 @@
 namespace spark_dsg {
 
 void InstanceViews::add_view(uint16_t image_id, cv::Mat& mask) {
-  id_to_instance_masks.insert(std::pair<uint16_t, cv::Mat>(image_id, mask));
+  id_to_instance_masks.insert(std::make_pair(image_id, mask));
 }
 
 }  // namespace spark_dsg

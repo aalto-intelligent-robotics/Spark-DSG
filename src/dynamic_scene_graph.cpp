@@ -1063,7 +1063,7 @@ void DynamicSceneGraph::visitLayers(const LayerVisitor& cb) {
   }
 }
 void DynamicSceneGraph::addMapView(const cv::Mat& map_view) {
-  map_views_.insert(std::pair(map_view_count_++, map_view));
+  map_views_.insert(std::pair(++map_view_count_, map_view));
 }
 
 void DynamicSceneGraph::saveMapViews(const std::string filepath) {
