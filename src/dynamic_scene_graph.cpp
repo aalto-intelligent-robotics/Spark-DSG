@@ -1068,8 +1068,6 @@ void DynamicSceneGraph::addMapView(const cv::Mat& map_view) {
 
 void DynamicSceneGraph::saveMapViews(const std::string filepath) {
   for (const auto& id_image_pair : map_views_) {
-    // std::cout << "Saving image " << id_image_pair.first << std::endl;
-    // Pad 0s so that the string has 3 numbers
     uint8_t width = 3;
     std::string filename = "/MapView_";
     std::ostringstream oss;
@@ -1078,6 +1076,41 @@ void DynamicSceneGraph::saveMapViews(const std::string filepath) {
     std::shared_ptr<cv::Mat> image = std::make_shared<cv::Mat>(id_image_pair.second);
     cv::cvtColor(*image, *image, cv::COLOR_RGB2BGR);
     cv::imwrite(filepath + filename, *image);
+  }
+}
+
+void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
+  for (const auto& node : getLayer(DsgLayers::OBJECTS).nodes()) {
+    const unsigned long& node_id = node.first;
+    const ObjectNodeAttributes& object_node_attr =
+        node.second->attributes<ObjectNodeAttributes>();
+
+    const std::string& viz_save_dir = (filepath + "/" + object_node_attr.name + "_" +
+                                       std::to_string(node_id) + "/viz/");
+    const std::string& mask_save_dir = (filepath + "/" + object_node_attr.name + "_" +
+                                        std::to_string(node_id) + "/masks/");
+
+    std::filesystem::create_directories(viz_save_dir.data());
+    std::filesystem::create_directories(mask_save_dir.data());
+
+    int view_count = 0;
+    for (const auto& id_mask : object_node_attr.instance_views.id_to_instance_masks) {
+      const uint16_t map_view_id = id_mask.first;
+      const cv::Mat& instance_mask = id_mask.second;
+      cv::Mat masked_instance_view;
+      map_views_.at(map_view_id).copyTo(masked_instance_view, instance_mask);
+      const std::string& view_id = std::to_string(++view_count);
+      uint8_t width = 3;
+      std::ostringstream view_id_ss;
+      view_id_ss << std::setw(width) << std::setfill('0') << view_id;
+      const std::string& viz_filename =
+          viz_save_dir + "/view_" + view_id_ss.str() + ".png";
+      cv::imwrite(viz_filename, masked_instance_view);
+
+      const std::string& mask_filename =
+          mask_save_dir + "/mask_" + view_id_ss.str() + ".png";
+      cv::imwrite(mask_filename, instance_mask * 255);
+    }
   }
 }
 

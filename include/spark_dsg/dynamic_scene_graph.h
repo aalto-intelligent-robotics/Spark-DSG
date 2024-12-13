@@ -63,7 +63,7 @@ class DynamicSceneGraph {
   using DynamicLayers = std::map<uint32_t, DynamicSceneGraphLayer::Ptr>;
   //! Callback type
   using LayerVisitor = std::function<void(LayerKey, BaseLayer*)>;
-  //! TEST: the rgb images of used to build the dsg
+  //! the rgb images of used to build the dsg
   using MapViews = std::unordered_map<uint16_t, cv::Mat>;
 
   friend class SceneGraphLogger;
@@ -518,11 +518,27 @@ class DynamicSceneGraph {
    */
   static Ptr load(std::string filepath);
 
-  //! TEST: Add descriptions if this works
+  /**
+   * @brief Add a new image as a map view
+   *
+   * @param map_view An RGB cv::Mat image
+   */
   void addMapView(const cv::Mat& map_view);
 
-  //! TEST: Add descriptions if this works
+  /**
+   * @brief Save all map views as images
+   *
+   * @param filepath Output directory for saved images
+   */
   void saveMapViews(const std::string filepath);
+
+  /**
+   * @brief Go through all dsg nodes and save all instance views as pairs of masked rgb
+   * image (for visualization) and binary mask
+   *
+   * @param filepath Output directory to save instance views to
+   */
+  void saveInstanceViews(const std::string filepath);
 
   void setMesh(const std::shared_ptr<Mesh>& mesh);
 
@@ -584,9 +600,9 @@ class DynamicSceneGraph {
 
   std::shared_ptr<Mesh> mesh_;
 
-  //! TEST: add images used to build the graph (starts with id 1)
-  uint16_t map_view_count_;
+  // Keeping images used to build the scene graph
   MapViews map_views_;
+  uint16_t map_view_count_;
 
  public:
   /**
@@ -615,10 +631,6 @@ class DynamicSceneGraph {
 
     return iter->second;
   }
-  // TEST: Get map_views
-  inline const MapViews& mapViews() const { return map_views_; }
-
-  inline const uint16_t& mapViewCount() const { return map_view_count_; }
 
   inline const std::map<LayerId, DynamicLayers>& dynamicLayers() const {
     return dynamic_layers_;
@@ -633,6 +645,16 @@ class DynamicSceneGraph {
   inline const Edges& dynamic_interlayer_edges() const {
     return dynamic_interlayer_edges_.edges;
   };
+
+  /**
+   * @brief Constant iterator around the map views
+   */
+  inline const MapViews& mapViews() const { return map_views_; }
+
+  /**
+   * @brief Return the number of map views (RGB images used to build the scene graph)
+   */
+  inline const uint16_t& mapViewCount() const { return map_view_count_; }
 };
 
 /**
