@@ -22,6 +22,7 @@ struct InstanceViews {
    * @param mask the semantic mask of the instance
    */
   void add_view(uint16_t image_id, cv::Mat& mask);
+  void merge_views(InstanceViews other);
 };
 
 }  // namespace spark_dsg
