@@ -218,8 +218,10 @@ struct ObjectNodeAttributes : public SemanticNodeAttributes {
   //! rotation of object w.r.t. world (only valid when registerd)
   Eigen::Quaterniond world_R_object;
 
-  // series of pairs of images + masks of the instance
+  //! TEST: series of pairs of images + masks of the instance
   InstanceViews instance_views;
+  //! TEST: whether object is in view frustum or not
+  bool is_in_view_frustum;
 
  protected:
   std::ostream& fill_ostream(std::ostream& out) const override;

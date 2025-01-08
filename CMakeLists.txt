@@ -19,6 +19,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
+find_package(PCL REQUIRED COMPONENTS common kdtree filters io)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(zmq libzmq)
@@ -62,11 +63,11 @@ target_include_directories(
   ${PROJECT_NAME}
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> ${OpenCV_INCLUDE_DIRS}
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include> ${PCL_INCLUDE_DIRS}
 )
 target_link_libraries(
   ${PROJECT_NAME} PUBLIC Eigen3::Eigen nlohmann_json::nlohmann_json ${OpenCV_LIBS}
-  PRIVATE Threads::Threads
+  PRIVATE Threads::Threads ${PCL_LIBRARIES}
 )
 
 if(SPARK_DSG_BUILD_ZMQ AND zmq_FOUND)

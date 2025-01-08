@@ -34,11 +34,17 @@
  * -------------------------------------------------------------------------- */
 #include "spark_dsg/dynamic_scene_graph.h"
 
+#include <Eigen/src/Core/Matrix.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/io/pcd_io.h>
+
 #include <filesystem>
 #include <memory>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <pcl/impl/point_types.hpp>
 #include <sstream>
 
 #include "spark_dsg/edge_attributes.h"
@@ -1089,11 +1095,20 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
                                        std::to_string(node_id) + "/viz/");
     const std::string& mask_save_dir = (filepath + "/" + object_node_attr.name + "_" +
                                         std::to_string(node_id) + "/masks/");
+    const std::string& cloud_save_dir = (filepath + "/" + object_node_attr.name + "_" +
+                                        std::to_string(node_id) + "/cloud/");
 
     std::filesystem::create_directories(viz_save_dir.data());
     std::filesystem::create_directories(mask_save_dir.data());
+    std::filesystem::create_directories(cloud_save_dir.data());
 
     int view_count = 0;
+    pcl::PointCloud<pcl::PointXYZ> instance_cloud;
+    for (const auto& mesh_id : object_node_attr.mesh_connections) {
+      Eigen::Vector3d point = mesh()->points.at(mesh_id).cast<double>();
+      instance_cloud.push_back(pcl::PointXYZ(point.x(), point.y(), point.z()));
+    }
+    pcl::io::savePCDFileASCII(cloud_save_dir + "instance_cloud.pcd", instance_cloud);
     for (const auto& id_mask : object_node_attr.instance_views.id_to_instance_masks) {
       const uint16_t map_view_id = id_mask.first;
       const cv::Mat& instance_mask = id_mask.second;
@@ -1112,6 +1127,11 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
       cv::imwrite(mask_filename, instance_mask * 255);
     }
   }
+  pcl::PointCloud<pcl::PointXYZ> map_cloud;
+  for (const auto& point : mesh()->points) {
+    map_cloud.push_back(pcl::PointXYZ(point.x(), point.y(), point.z()));
+  }
+  pcl::io::savePCDFileASCII(filepath + "/map_cloud.pcd", map_cloud);
 }
 
 }  // namespace spark_dsg
