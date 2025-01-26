@@ -3,13 +3,13 @@
 #include <cstdint>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
-#include <unordered_map>
+#include <map>
 
 namespace spark_dsg {
 
 struct InstanceViews {
   // map from image-id to mask
-  std::unordered_map<uint16_t, cv::Mat> id_to_instance_masks;
+  std::map<uint16_t, cv::Mat> id_to_instance_masks;
 
   // Cosntructors.
   InstanceViews() = default;

@@ -33,10 +33,10 @@
  * purposes notwithstanding any copyright notation herein.
  * -------------------------------------------------------------------------- */
 #pragma once
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <opencv2/core/mat.hpp>
-#include <type_traits>
 
 #include "spark_dsg/dynamic_scene_graph_layer.h"
 #include "spark_dsg/mesh.h"
@@ -64,7 +64,7 @@ class DynamicSceneGraph {
   //! Callback type
   using LayerVisitor = std::function<void(LayerKey, BaseLayer*)>;
   //! the rgb images of used to build the dsg
-  using MapViews = std::unordered_map<uint16_t, cv::Mat>;
+  using MapViews = std::map<uint16_t, cv::Mat>;
 
   friend class SceneGraphLogger;
 
@@ -524,6 +524,14 @@ class DynamicSceneGraph {
    * @param map_view An RGB cv::Mat image
    */
   void addMapView(const cv::Mat& map_view);
+
+  /**
+   * @brief Add a new image as a map view
+   *
+   * @param view_id The id of the map view
+   * @param map_view An RGB cv::Mat image
+   */
+  void addMapView(const uint16_t& view_id, const cv::Mat& map_view);
 
   /**
    * @brief Save all map views as images

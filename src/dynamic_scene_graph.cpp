@@ -35,12 +35,15 @@
 #include "spark_dsg/dynamic_scene_graph.h"
 
 #include <Eigen/src/Core/Matrix.h>
+#include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/io/pcd_io.h>
 
 #include <filesystem>
+#include <fstream>
 #include <memory>
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -1072,37 +1075,55 @@ void DynamicSceneGraph::addMapView(const cv::Mat& map_view) {
   map_views_.insert(std::pair(++map_view_count_, map_view));
 }
 
+void DynamicSceneGraph::addMapView(const uint16_t& view_id, const cv::Mat& map_view) {
+  map_views_.insert(std::pair(view_id, map_view));
+}
+
 void DynamicSceneGraph::saveMapViews(const std::string filepath) {
+  nlohmann::json all_records = nlohmann::json::array();
   for (const auto& id_image_pair : map_views_) {
+    nlohmann::json record;
     uint8_t width = 3;
-    std::string filename = "/MapView_";
     std::ostringstream oss;
-    oss << std::setw(width) << std::setfill('0') << id_image_pair.first;
-    filename = filename + oss.str() + ".png";
+    const int& map_view_id = id_image_pair.first;
+    oss << std::setw(width) << std::setfill('0') << map_view_id;
+    std::string filename = "/" + oss.str() + ".png";
+    std::string abs_filename = filepath + filename;
     std::shared_ptr<cv::Mat> image = std::make_shared<cv::Mat>(id_image_pair.second);
     cv::cvtColor(*image, *image, cv::COLOR_RGB2BGR);
-    cv::imwrite(filepath + filename, *image);
+    cv::imwrite(abs_filename, *image);
+    record["map_view_id"] = map_view_id;
+    record["file"] = abs_filename;
+    all_records.push_back(record);
   }
+  std::ofstream file(filepath + "/map_views.json");
+  file << all_records;
 }
 
 void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
+  nlohmann::json all_records = nlohmann::json::array();
   for (const auto& node : getLayer(DsgLayers::OBJECTS).nodes()) {
     const unsigned long& node_id = node.first;
     const ObjectNodeAttributes& object_node_attr =
         node.second->attributes<ObjectNodeAttributes>();
+    nlohmann::json record;
+    record["node_id"] = node_id;
+    record["class_id"] = object_node_attr.semantic_label;
+    record["name"] = object_node_attr.name;
+    record["masks"] = nlohmann::json::array();
 
     const std::string& viz_save_dir = (filepath + "/" + object_node_attr.name + "_" +
                                        std::to_string(node_id) + "/viz/");
     const std::string& mask_save_dir = (filepath + "/" + object_node_attr.name + "_" +
                                         std::to_string(node_id) + "/masks/");
     const std::string& cloud_save_dir = (filepath + "/" + object_node_attr.name + "_" +
-                                        std::to_string(node_id) + "/cloud/");
+                                         std::to_string(node_id) + "/cloud/");
 
     std::filesystem::create_directories(viz_save_dir.data());
     std::filesystem::create_directories(mask_save_dir.data());
     std::filesystem::create_directories(cloud_save_dir.data());
 
-    int view_count = 0;
+    // int view_count = 0;
     pcl::PointCloud<pcl::PointXYZ> instance_cloud;
     for (const auto& mesh_id : object_node_attr.mesh_connections) {
       Eigen::Vector3d point = mesh()->points.at(mesh_id).cast<double>();
@@ -1110,23 +1131,31 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
     }
     pcl::io::savePCDFileASCII(cloud_save_dir + "instance_cloud.pcd", instance_cloud);
     for (const auto& id_mask : object_node_attr.instance_views.id_to_instance_masks) {
+      // nlohmann::json file_record;
       const uint16_t map_view_id = id_mask.first;
       const cv::Mat& instance_mask = id_mask.second;
       cv::Mat masked_instance_view;
       map_views_.at(map_view_id).copyTo(masked_instance_view, instance_mask);
-      const std::string& view_id = std::to_string(++view_count);
-      uint8_t width = 3;
+      // const std::string& view_id = std::to_string(++view_count);
+      uint8_t width = 5;
       std::ostringstream view_id_ss;
-      view_id_ss << std::setw(width) << std::setfill('0') << view_id;
-      const std::string& viz_filename =
-          viz_save_dir + "/view_" + view_id_ss.str() + ".png";
+      view_id_ss << std::setw(width) << std::setfill('0') << map_view_id;
+      const std::string& viz_filename = viz_save_dir + "/" + view_id_ss.str() + ".png";
       cv::imwrite(viz_filename, masked_instance_view);
 
       const std::string& mask_filename =
-          mask_save_dir + "/mask_" + view_id_ss.str() + ".png";
+          mask_save_dir + "/" + view_id_ss.str() + ".png";
       cv::imwrite(mask_filename, instance_mask * 255);
+      // file_record["mask"] = mask_filename;
+      // file_record["map_view_id"] = map_view_id;
+      record["masks"].push_back({{"file", mask_filename}, {"map_view_id", map_view_id}});
     }
+    all_records.push_back(record);
   }
+
+  std::ofstream file(filepath + "/instance_views.json");
+  file << all_records;
+
   pcl::PointCloud<pcl::PointXYZ> map_cloud;
   for (const auto& point : mesh()->points) {
     map_cloud.push_back(pcl::PointXYZ(point.x(), point.y(), point.z()));
