@@ -85,8 +85,6 @@ void DynamicSceneGraph::clear() {
 
   mesh_.reset();
 
-  //! TEST: map views
-  map_view_count_ = 0;
   map_views_.clear();
 
   for (const auto& id : layer_ids) {
@@ -888,7 +886,7 @@ void DynamicSceneGraph::loadInstanceViewsToGraph(std::string filepath) {
     for (const auto& mask_data : node_data["masks"]) {
       std::string mask_file = mask_data["file"];
       mask_ptr = std::make_shared<cv::Mat>(cv::imread(mask_file) / 255);
-      object_attrs.instance_views.add_view(mask_data["map_view_id"], *mask_ptr);
+      object_attrs.instance_views.addView(mask_data["map_view_id"], *mask_ptr);
       NodeAttributes::Ptr object_attr_assign = object_attrs.clone();
       addOrUpdateNode(DsgLayers::OBJECTS, node_id, std::move(object_attr_assign));
     }
@@ -1100,8 +1098,8 @@ void DynamicSceneGraph::visitLayers(const LayerVisitor& cb) {
     }
   }
 }
-void DynamicSceneGraph::addMapView(const cv::Mat& map_view) {
-  map_views_.insert(std::pair(++map_view_count_, map_view));
+uint16_t DynamicSceneGraph::getLatestId() {
+  return map_views_.rbegin()->first;
 }
 
 void DynamicSceneGraph::addMapView(const uint16_t& view_id, const cv::Mat& map_view) {

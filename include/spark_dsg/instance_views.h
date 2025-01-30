@@ -21,8 +21,8 @@ struct InstanceViews {
    * @param image_id the id of the frame containing the instance
    * @param mask the semantic mask of the instance
    */
-  void add_view(uint16_t image_id, cv::Mat& mask);
-  void merge_views(InstanceViews other);
+  void addView(uint16_t image_id, cv::Mat& mask);
+  void mergeViews(InstanceViews other);
 };
 
 }  // namespace spark_dsg

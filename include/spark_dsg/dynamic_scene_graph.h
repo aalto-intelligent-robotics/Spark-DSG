@@ -534,17 +534,17 @@ class DynamicSceneGraph {
   /**
    * @brief Add a new image as a map view
    *
-   * @param map_view An RGB cv::Mat image
-   */
-  void addMapView(const cv::Mat& map_view);
-
-  /**
-   * @brief Add a new image as a map view
-   *
    * @param view_id The id of the map view
    * @param map_view An RGB cv::Mat image
    */
   void addMapView(const uint16_t& view_id, const cv::Mat& map_view);
+
+  /**
+   * @brief Add a new image as a map view
+   *
+   * @param map_view An RGB cv::Mat image
+   */
+  uint16_t getLatestId();
 
   /**
    * @brief Save all map views as images
@@ -623,7 +623,6 @@ class DynamicSceneGraph {
 
   // Keeping images used to build the scene graph
   MapViews map_views_;
-  uint16_t map_view_count_;
 
  public:
   /**
@@ -672,10 +671,10 @@ class DynamicSceneGraph {
    */
   inline const MapViews& mapViews() const { return map_views_; }
 
-  /**
-   * @brief Return the number of map views (RGB images used to build the scene graph)
-   */
-  inline const uint16_t& mapViewCount() const { return map_view_count_; }
+  // /**
+  //  * @brief Return the number of map views (RGB images used to build the scene graph)
+  //  */
+  // inline const uint16_t& mapViewCount() const { return map_view_count_; }
 };
 
 /**
