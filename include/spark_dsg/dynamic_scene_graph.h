@@ -518,6 +518,19 @@ class DynamicSceneGraph {
    */
   static Ptr load(std::string filepath);
 
+
+  /**
+   * @brief parse instance views from JSON file and load it to graph
+   * @param filepath Complete path to file to read, including extension.
+   */
+  void loadInstanceViewsToGraph(std::string filepath);
+
+  /**
+   * @brief parse map views from JSON file and load it to graph
+   * @param filepath Complete path to file to read, including extension.
+   */
+  void loadMapViewsToGraph(std::string filepath);
+
   /**
    * @brief Add a new image as a map view
    *

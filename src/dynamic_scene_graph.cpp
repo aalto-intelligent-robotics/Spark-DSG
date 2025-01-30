@@ -875,6 +875,35 @@ DynamicSceneGraph::Ptr DynamicSceneGraph::load(std::string filepath) {
   return io::loadDsgBinary(filepath);
 }
 
+//! TEST: Load instance views to graph
+void DynamicSceneGraph::loadInstanceViewsToGraph(std::string filepath) {
+  std::ifstream instance_views_json(filepath);
+  nlohmann::json instance_views_data = nlohmann::json::parse(instance_views_json);
+
+  for (const auto& node_data : instance_views_data) {
+    NodeId node_id = node_data["node_id"];
+    ObjectNodeAttributes object_attrs =
+        getNode(node_id).attributes<spark_dsg::ObjectNodeAttributes>();
+    std::shared_ptr<cv::Mat> mask_ptr;
+    for (const auto& mask_data : node_data["masks"]) {
+      std::string mask_file = mask_data["file"];
+      mask_ptr = std::make_shared<cv::Mat>(cv::imread(mask_file) / 255);
+      object_attrs.instance_views.add_view(mask_data["map_view_id"], *mask_ptr);
+      NodeAttributes::Ptr object_attr_assign = object_attrs.clone();
+      addOrUpdateNode(DsgLayers::OBJECTS, node_id, std::move(object_attr_assign));
+    }
+  }
+}
+
+//! TEST: Load map views to graph
+void DynamicSceneGraph::loadMapViewsToGraph(std::string filepath) {
+  std::ifstream map_views_json(filepath);
+  nlohmann::json map_views_data = nlohmann::json::parse(map_views_json);
+  for (const auto& view_data : map_views_data) {
+    addMapView(view_data["map_view_id"], cv::imread(view_data["file"]));
+  }
+}
+
 void DynamicSceneGraph::setMesh(const std::shared_ptr<Mesh>& mesh) { mesh_ = mesh; }
 
 bool DynamicSceneGraph::hasMesh() const { return mesh_ != nullptr; }
@@ -1148,7 +1177,8 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
       cv::imwrite(mask_filename, instance_mask * 255);
       // file_record["mask"] = mask_filename;
       // file_record["map_view_id"] = map_view_id;
-      record["masks"].push_back({{"file", mask_filename}, {"map_view_id", map_view_id}});
+      record["masks"].push_back(
+          {{"file", mask_filename}, {"map_view_id", map_view_id}});
     }
     all_records.push_back(record);
   }
