@@ -873,35 +873,6 @@ DynamicSceneGraph::Ptr DynamicSceneGraph::load(std::string filepath) {
   return io::loadDsgBinary(filepath);
 }
 
-//! TEST: Load instance views to graph
-void DynamicSceneGraph::loadInstanceViewsToGraph(std::string filepath) {
-  std::ifstream instance_views_json(filepath);
-  nlohmann::json instance_views_data = nlohmann::json::parse(instance_views_json);
-
-  for (const auto& node_data : instance_views_data) {
-    NodeId node_id = node_data["node_id"];
-    ObjectNodeAttributes object_attrs =
-        getNode(node_id).attributes<spark_dsg::ObjectNodeAttributes>();
-    std::shared_ptr<cv::Mat> mask_ptr;
-    for (const auto& mask_data : node_data["masks"]) {
-      std::string mask_file = mask_data["file"];
-      mask_ptr = std::make_shared<cv::Mat>(cv::imread(mask_file) / 255);
-      object_attrs.instance_views.addView(mask_data["map_view_id"], *mask_ptr);
-      NodeAttributes::Ptr object_attr_assign = object_attrs.clone();
-      addOrUpdateNode(DsgLayers::OBJECTS, node_id, std::move(object_attr_assign));
-    }
-  }
-}
-
-//! TEST: Load map views to graph
-void DynamicSceneGraph::loadMapViewsToGraph(std::string filepath) {
-  std::ifstream map_views_json(filepath);
-  nlohmann::json map_views_data = nlohmann::json::parse(map_views_json);
-  for (const auto& view_data : map_views_data) {
-    addMapView(view_data["map_view_id"], cv::imread(view_data["file"]));
-  }
-}
-
 void DynamicSceneGraph::setMesh(const std::shared_ptr<Mesh>& mesh) { mesh_ = mesh; }
 
 bool DynamicSceneGraph::hasMesh() const { return mesh_ != nullptr; }
@@ -1098,9 +1069,7 @@ void DynamicSceneGraph::visitLayers(const LayerVisitor& cb) {
     }
   }
 }
-uint16_t DynamicSceneGraph::getLatestId() {
-  return map_views_.rbegin()->first;
-}
+uint16_t DynamicSceneGraph::getLatestId() { return map_views_.rbegin()->first; }
 
 void DynamicSceneGraph::addMapView(const uint16_t& view_id, const cv::Mat& map_view) {
   map_views_.insert(std::pair(view_id, map_view));
@@ -1157,12 +1126,12 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
       instance_cloud.push_back(pcl::PointXYZ(point.x(), point.y(), point.z()));
     }
     pcl::io::savePCDFileASCII(cloud_save_dir + "instance_cloud.pcd", instance_cloud);
-    for (const auto& id_mask : object_node_attr.instance_views.id_to_instance_masks) {
+    for (const auto& id_mask : object_node_attr.instance_views.id_to_instance_masks_) {
       // nlohmann::json file_record;
       const uint16_t map_view_id = id_mask.first;
-      const cv::Mat& instance_mask = id_mask.second;
+      const View& view = id_mask.second;
       cv::Mat masked_instance_view;
-      map_views_.at(map_view_id).copyTo(masked_instance_view, instance_mask);
+      map_views_.at(map_view_id).copyTo(masked_instance_view, view.mask_);
       // const std::string& view_id = std::to_string(++view_count);
       uint8_t width = 5;
       std::ostringstream view_id_ss;
@@ -1172,11 +1141,12 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
 
       const std::string& mask_filename =
           mask_save_dir + "/" + view_id_ss.str() + ".png";
-      cv::imwrite(mask_filename, instance_mask * 255);
+      cv::imwrite(mask_filename, view.mask_ * 255);
       // file_record["mask"] = mask_filename;
       // file_record["map_view_id"] = map_view_id;
-      record["masks"].push_back(
-          {{"file", mask_filename}, {"map_view_id", map_view_id}});
+      record["masks"].push_back({{"file", mask_filename},
+                                 {"map_view_id", map_view_id},
+                                 {"mask_id", view.mask_id_}});
     }
     all_records.push_back(record);
   }

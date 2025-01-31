@@ -3,20 +3,20 @@
 #include <cstdint>
 #include <opencv2/core/mat.hpp>
 #include <utility>
-#include <iostream>
 
 namespace spark_dsg {
+View::View(const uint64_t& mask_id, const cv::Mat& mask)
+    : mask_id_(mask_id), mask_(mask) {}
 
-void InstanceViews::addView(uint16_t image_id, cv::Mat& mask) {
-  id_to_instance_masks.insert(std::make_pair(image_id, mask));
+void InstanceViews::addView(uint16_t map_view_id, const View& mask) {
+  id_to_instance_masks_.insert(std::make_pair(map_view_id, mask));
 }
 
 void InstanceViews::mergeViews(InstanceViews other) {
-  for (const auto& id_mask : other.id_to_instance_masks) {
-    uint16_t id = id_mask.first;
-    if (id_to_instance_masks.find(id) == id_to_instance_masks.end()) {
-      cv::Mat mask = id_mask.second;
-      addView(id, mask);
+  for (const auto& id_view : other.id_to_instance_masks_) {
+    uint16_t map_view_id = id_view.first;
+    if (id_to_instance_masks_.find(map_view_id) == id_to_instance_masks_.end()) {
+      addView(map_view_id, id_view.second);
     }
   }
 }
