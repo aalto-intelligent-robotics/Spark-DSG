@@ -1119,7 +1119,6 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
     std::filesystem::create_directories(mask_save_dir.data());
     std::filesystem::create_directories(cloud_save_dir.data());
 
-    // int view_count = 0;
     pcl::PointCloud<pcl::PointXYZ> instance_cloud;
     for (const auto& mesh_id : object_node_attr.mesh_connections) {
       Eigen::Vector3d point = mesh()->points.at(mesh_id).cast<double>();
@@ -1127,12 +1126,10 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
     }
     pcl::io::savePCDFileASCII(cloud_save_dir + "instance_cloud.pcd", instance_cloud);
     for (const auto& id_mask : object_node_attr.instance_views.id_to_instance_masks_) {
-      // nlohmann::json file_record;
       const uint16_t map_view_id = id_mask.first;
       const View& view = id_mask.second;
       cv::Mat masked_instance_view;
       map_views_.at(map_view_id).copyTo(masked_instance_view, view.mask_);
-      // const std::string& view_id = std::to_string(++view_count);
       uint8_t width = 5;
       std::ostringstream view_id_ss;
       view_id_ss << std::setw(width) << std::setfill('0') << map_view_id;
@@ -1142,8 +1139,6 @@ void DynamicSceneGraph::saveInstanceViews(const std::string filepath) {
       const std::string& mask_filename =
           mask_save_dir + "/" + view_id_ss.str() + ".png";
       cv::imwrite(mask_filename, view.mask_ * 255);
-      // file_record["mask"] = mask_filename;
-      // file_record["map_view_id"] = map_view_id;
       record["masks"].push_back({{"file", mask_filename},
                                  {"map_view_id", map_view_id},
                                  {"mask_id", view.mask_id_}});

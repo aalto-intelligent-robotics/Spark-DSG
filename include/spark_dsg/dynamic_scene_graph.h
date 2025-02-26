@@ -518,7 +518,6 @@ class DynamicSceneGraph {
    */
   static Ptr load(std::string filepath);
 
-
   /**
    * @brief parse instance views from JSON file and load it to graph
    * @param filepath Complete path to file to read, including extension.
@@ -540,14 +539,15 @@ class DynamicSceneGraph {
   void addMapView(const uint16_t& view_id, const cv::Mat& map_view);
 
   /**
-   * @brief Add a new image as a map view
+   * @brief returns the latest map_view's id
    *
-   * @param map_view An RGB cv::Mat image
+   * @return the latest map_view's id
    */
   uint16_t getLatestId();
 
   /**
-   * @brief Save all map views as images
+   * @brief Save all map views as images, and outputs a json file containing links to
+   * the saved images
    *
    * @param filepath Output directory for saved images
    */
@@ -555,7 +555,8 @@ class DynamicSceneGraph {
 
   /**
    * @brief Go through all dsg nodes and save all instance views as pairs of masked rgb
-   * image (for visualization) and binary mask
+   * image (for visualization) and binary mask, outputs a json file containing links to
+   * each node's instance masks, and the pointcloud of each object
    *
    * @param filepath Output directory to save instance views to
    */

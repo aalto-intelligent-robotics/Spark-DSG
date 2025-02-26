@@ -18,20 +18,26 @@ struct View {
 };
 
 struct InstanceViews {
-  // map from map_view_id to View(mask_id, mask)
+  /**
+   * @brief mapped as {map_view_id -> View(mask_id, mask)}
+   */
   std::map<uint64_t, View> id_to_instance_masks_;
 
-  // Cosntructors.
   InstanceViews() = default;
   virtual ~InstanceViews() = default;
 
   /**
    * @brief Add a new view
    *
-   * @param image_id the id of the frame containing the instance
+   * @param map_view_id the id of the frame containing the instance
    * @param mask the semantic mask of the instance
    */
   void addView(uint16_t map_view_id, const View& mask);
+  /**
+   * @brief Merge with another InstanceView
+   *
+   * @param other InstanceView to merge with
+   */
   void mergeViews(InstanceViews other);
 };
 
