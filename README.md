@@ -3,6 +3,9 @@
 
 ## Spark-DSG
 
+> **Note**<br>
+> This is our fork for the original Spark-DSG project from [here](https://github.com/MIT-SPARK/Spark-DSG) to enable our project [REACT](https://github.com/aalto-intelligent-robotics/REACT).
+
 This is the core c++ library that contains the dynamic scene graph data-structure used by Hydra. It also has python bindings.
 
 ### Change Notes
